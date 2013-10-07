@@ -1,0 +1,86 @@
+<div class="subheader">
+  <div class="container">
+	<div class="row">
+	  <div class="span12">
+		<form class="form-inline" style="margin-bottom:0px">
+		  <div id="summary-pane-subpane-selector" class="btn-group" data-toggle="buttons-radio">
+			<!-- <button id="summary-pane-table-button" class="btn" data-pane-id="summary-pane-table-subpane"><i class="icon-th"></i></button> -->
+			<!-- <button id="summary-pane-chart-button" class="btn" data-pane-id="summary-pane-chart-subpane"><i class="icon-align-left"></i></button> -->
+			<button type="button" id="summary-pane-pl-table-button" class="btn" data-pane-id="summary-pane-pl-table-subpane">損益計算</button>
+			<button type="button" id="summary-pane-bs-table-button" class="btn" data-pane-id="summary-pane-bs-table-subpane">資産累計</button>
+			<button type="button" id="summary-pane-chart-button" class="btn" data-pane-id="summary-pane-chart-subpane">グラフ</button>
+		  </div>
+		  <div class="pull-right">
+			<img id="summary-pane-loading-img" src="/img/loading_big.gif" alt="">
+			&nbsp;&nbsp;
+			<div class="btn-group" data-toggle="buttons-radio">
+			  <button type="button" id="summary-pane-month-button" class="btn">月別</button>
+			  <button type="button" id="summary-pane-year-button" class="btn">年別</button>
+			</div>
+			&nbsp;&nbsp;
+			<div class="input-append">
+			  <input type="text" class="input-mini" id="summary-pane-date-input" />
+			  <button type="button" id="summary-pane-refresh-button" class="btn"><i class="icon-refresh"></i></button>
+			</div>
+			&nbsp;&nbsp;
+			<button type="button" id="summary-pane-prev-button" class="btn"><i class="icon-arrow-left"></i>&nbsp;前</button>
+			<button type="button" id="summary-pane-next-button" class="btn">次&nbsp;<i class="icon-arrow-right"></i></button>&nbsp;&nbsp;&nbsp;
+		  </div>
+		</form>
+	  </div>
+	  <div class="span1">
+	  </div>
+	</div>
+  </div>
+</div>
+<div class="container">
+  <div class="row">
+	<div class="span12">
+
+	  <div class="tab-pane" id="summary-pane-pl-table-subpane">
+		<div id="summary-pane-pl-table-wrapper" class="grid-wrapper">
+		</div>
+	  </div>
+
+	  <div class="tab-pane" id="summary-pane-bs-table-subpane">
+		<div id="summary-pane-bs-table-wrapper" class="grid-wrapper">
+		</div>
+	  </div>
+
+	  <div class="tab-pane" id="summary-pane-chart-subpane">
+		<div class="row">
+		  <div class="span2">
+			<ul id="summary-pane-chart-selector" class="nav nav-tabs nav-stacked">
+			  <li><a href="#" data-chart="LineChart" data-chart-category="cost">支出推移</a></li>
+			  <li><a href="#" data-chart="PieChart" data-chart-category="cost">支出比率</a></li>
+			  <li><a href="#" data-chart="LineChart" data-chart-category="income-cost-sum">損益推移</a></li>
+			  <li><a href="#" data-chart="LineChart" data-chart-category="assets">資産累計</a></li>
+			</ul>
+		  </div>
+		  <div class="span10">
+			<div id="summary-pane-chart">
+			</div>
+		  </div>
+		</div>
+	  </div>
+
+	</div>
+  </div>
+</div>
+
+<div id="summary-pane-caption-budget" style="display:none">
+  予算
+</div>
+
+<div id="summary-pane-caption-remain" style="display:none">
+  予算残
+</div>
+
+<div id="summary-pane-caption-category" style="display:none">
+  集計
+</div>
+
+<div id="summary-pane-grid-header-format" style="display:none"
+	 data-format-month="%y年<br>%m月"
+	 data-format-year="%y年">  
+</div>
