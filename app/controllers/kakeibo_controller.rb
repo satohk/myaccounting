@@ -7,7 +7,7 @@ class KakeiboController < ApplicationController
 
       #test wait
       #sleep 2
-      
+
       entry = KakeiboEntry.update_with_summary(:id => data["update_id"],
                                                :user_id => current_user.id,
                                                :amount => data["amount"],
@@ -16,8 +16,10 @@ class KakeiboController < ApplicationController
                                                :debtor_id => data["debtor_id"],
                                                :debtor_sub_id => data["debtor_sub_id"],
                                                :transaction_date => KakeiboEntry.conv_date(data["transaction_date"]),
-                                               :memo => data["memo"]
+                                               :memo => data["memo"],
+                                               :is_template => data["is_template"]
                                                )
+
       if entry != nil
         logger.debug "update success" 
         result = {:type => "success", :entry_id => entry.id}
@@ -47,15 +49,17 @@ class KakeiboController < ApplicationController
       #sleep 2
 
       entry = KakeiboEntry.create_with_summary(
-                          :user_id => current_user.id,
-                          :amount => data["amount"],
-                          :creditor_id => data["creditor_id"],
-                          :creditor_sub_id => data["creditor_sub_id"],
-                          :debtor_id => data["debtor_id"],
-                          :debtor_sub_id => data["debtor_sub_id"],
-                          :transaction_date => KakeiboEntry.conv_date(data["transaction_date"]),
-                          :memo => data["memo"]
-                          )
+                                               :user_id => current_user.id,
+                                               :amount => data["amount"],
+                                               :creditor_id => data["creditor_id"],
+                                               :creditor_sub_id => data["creditor_sub_id"],
+                                               :debtor_id => data["debtor_id"],
+                                               :debtor_sub_id => data["debtor_sub_id"],
+                                               :transaction_date => KakeiboEntry.conv_date(data["transaction_date"]),
+                                               :memo => data["memo"],
+                                               :is_template => data["is_template"]
+                                               )
+
       if entry != nil
         logger.debug "add success" 
         result = {
@@ -89,7 +93,7 @@ class KakeiboController < ApplicationController
 
       #test wait
       #sleep 2
-      
+
       res = KakeiboEntry.delete_with_summary(data["id_list"], current_user.id)
 
       if res == true
@@ -114,24 +118,13 @@ class KakeiboController < ApplicationController
   def get_entries
     if user_signed_in?
       data = ActiveSupport::JSON.decode(params[:json])
+
       offset = data["offset"]
       limit = data["limit"]
       option = data["option"]
 
-      logger.debug option
-      
-#       rows = KakeiboEntry.find(:all,
-#                                :select=>'*',
-#                                :conditions=>"",
-#                                :order=>"transaction_date desc",
-#                                :limit=>limit,
-#                                :offset=>offset)
-
       condition = KakeiboEntry.conv_option_array2condition_str(option, current_user.id)
       rows = KakeiboEntry.find_with_option_array(offset, limit, condition, "transaction_date desc")
-
-      p "rows="
-      p rows
 
       if rows != nil
         result = {

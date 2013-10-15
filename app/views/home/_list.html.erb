@@ -6,9 +6,7 @@
 	  <div class="span10">
 		<form class="form-inline" style="margin-bottom:0px">
 		  <button type="button" id="list-pane-add-button" class="btn btn-primary"><i class="icon-pencil icon-white"></i>&nbsp;追加</button>
-		  &nbsp;
 		  <button type="button" id="list-pane-search-button" class="btn"><i class="icon-search"></i>&nbsp;検索</button>
-		  &nbsp;&nbsp;&nbsp;
 		  <div class="pull-right">
 			<strong id="list-pane-title"></strong> &nbsp;&nbsp;&nbsp;
 			<strong id="list-pane-grid-info-str">1-50 of 2000</strong> &nbsp;
@@ -28,7 +26,13 @@
 	  <ul id="list-pane-entries-button-container" class="nav nav-tabs nav-stacked">
 		<li><a id="list-pane-all-entries-button" href="#">全て</a></li>
 		<li><a id="list-pane-recent-entries-button" href="#">最近の記入</a></li>
+		<li><a id="list-pane-template-entries-button" href="#">ひな形</a></li>
 	  </ul>
+	  <div style="display:none">
+		<strong>検索結果</strong>
+		<ul id="list-pane-search-result-button-container" class="nav nav-tabs nav-stacked">
+		</ul>
+	  </div>
 	</div>
 	<div class="span10">
 	  <div id="list-pane-detail-panel" class="detail-panel">
@@ -38,20 +42,17 @@
 			  <tr>
 				<td>
 				  <div class="no-margin control-group">
-					<span id="list-pane-input-date-caption" class="help-inline">日付</span>
-					&nbsp;<a id="list-pane-date-info" href="#">?</a><br>
+					<span id="list-pane-input-date-caption" class="help-inline">日付</span><br>
 					<input id="list-pane-input-date" type="text" class="input-small error" /><br>
 				  </div>
 				<td>
 				  <div class="no-margin control-group">
-					<span id="list-pane-input-debtor-caption" class="help-inline">借り方</span>
-					&nbsp;<a id="list-pane-debtor-info" href="#">?</a><br>
+					<span id="list-pane-input-debtor-caption" class="help-inline">借り方</span><br>
 					<input id="list-pane-input-debtor" type="text" class="input-medium" />
 				  </div>
 				<td>
 				  <div class="no-margin control-group">
-					<span id="list-pane-input-creditor-caption" class="help-inline">貸し方</span>
-					&nbsp;<a id="list-pane-creditor-info" href="#">?</a><br>
+					<span id="list-pane-input-creditor-caption" class="help-inline">貸し方</span><br>
 					<input id="list-pane-input-creditor" type="text" class="input-medium" />
 				  </div>
 				<td>
@@ -68,6 +69,7 @@
 			  <tr>
 				<td><td><td><td>
 				<td class="pull-right">
+				  <button type="button" id="list-pane-detail-panel-help-button" class="btn btn-link btn-small" title="使い方">使い方</button>
 				  <button type="button" id="list-pane-detail-panel-close-button" class="btn btn-small">閉じる</button>
 				  <button type="button" id="list-pane-modify-submit-button" class="btn btn-small btn-success">更新</button>
 				  <button type="button" id="list-pane-add-submit-button" class="btn btn-small btn-primary">追加</button>
@@ -147,4 +149,29 @@
   </div>
 </div>
 
+<div id="list-pane-detail-panel-help" style="display:none">
+  <dl style="font-size:small">
+	<dt>フォーカス移動</dt>
+	<dd>Enterで次のコントロールに、Shift+Enterで前のコントロールに移動。</dd>
+	<dt>日付</dt>
+	<dd>
+	  ダイアログから日付を選択。または数字を入力。<br>
+	  2桁の数字入力：日<br>
+	  4桁の数字入力：月日<br>
+	  6桁の数字入力：年月日<br>
+	</dd>
+	<dt>借り方</dt>
+	<dd>
+	  金額の移動先の科目を選択。<br>
+	  ポップアップから選択。または科目コードを入力。
+	</dd>
+	<dt>貸し方</dt>
+	<dd>
+	  金額の移動元の科目を選択。<br>
+	  ポップアップから選択。または科目コードを入力。
+	</dd>
+  </dl>
+</div>
+
 <div id="list-pane-search-entries-button-template" style="display:none">検索結果 %n</div>
+<div id="list-pane-row-button-label" style="display:none">発行</div>

@@ -7,15 +7,20 @@ if(!kakeibo.model){
 /*
  * class KakeiboEntryList
  */
-kakeibo.model.KakeiboEntryList = function(query_option, page_size, on_current_page_modified){
+kakeibo.model.KakeiboEntryList = function(query_option, page_size, on_current_page_modified, is_template_list){
 	this.m_entries = [];
 	this.m_num_entries = -1;
 	this.m_page_size = page_size;
 	this.m_current_page_no = 0;
 	this.m_query_option = query_option;
 	this.m_on_current_page_modified = on_current_page_modified;
+	this.m_is_template_list = is_template_list;
 
 	kakeibo.model.KakeiboEntryList.m_all_lists.push(this);
+}
+
+kakeibo.model.KakeiboEntryList.prototype.isTemplateList = function(){
+	return this.m_is_template_list;
 }
 
 kakeibo.model.KakeiboEntryList.prototype.refresh = function(){
@@ -303,6 +308,10 @@ kakeibo.model.KakeiboEntry.prototype.getDebtorLeafStr = function(){
 	return kakeibo.model.KakeiboEntryAttrConverter.category2str(this.getDebtorLeaf());
 }
 
+kakeibo.model.KakeiboEntry.prototype.isTemplate = function(){
+	return this.m_is_template;
+}
+
 kakeibo.model.KakeiboEntry.prototype.isIncomplete = function(){
 	if(!this.m_creditor || !this.m_debtor || !this.m_transaction_date || (this.m_amount==null || this.m_amount==undefined)){
 		return true;
@@ -355,6 +364,9 @@ kakeibo.model.KakeiboEntry.prototype.setAttrHash = function(attr){
 				this.m_creditor_sub = null;
 			}
 		}
+		else if(key == "is_template"){
+			this.m_is_template = parseInt(attr[key], 10);
+		}
 	}
 }
 
@@ -387,6 +399,9 @@ kakeibo.model.KakeiboEntry.prototype.getAttrHash = function(){
 	}
 	if(this.m_memo != null){
 		attr.memo = this.m_memo;
+	}
+	if(this.m_is_template != null){
+		attr.is_template = this.m_is_template;
 	}
 
 	return attr;
@@ -457,6 +472,13 @@ kakeibo.model.KakeiboEntrySearchParam = function(param){
 	if(param.memo != null && param.memo != ""){
 		this.m_param.push(["memo", "like", '%' + param.memo + '%']);
 	}
+
+	if(param.is_template != null){
+		this.m_param.push(["is_template", "=", "1"]);
+	}
+	else{
+		this.m_param.push(["is_template", "<>", "1"]);
+	}
 }
 
 
@@ -505,7 +527,10 @@ kakeibo.model.KakeiboEntrySet.addEntry = function(id, attr, upload){
 		});
 
 		for(var i = 0; i < kakeibo.model.KakeiboEntryList.m_all_lists.length; i++){
-			kakeibo.model.KakeiboEntryList.m_all_lists[i].refresh();
+			var list = kakeibo.model.KakeiboEntryList.m_all_lists[i];
+			if(entry.isTemplate() == list.isTemplateList()){
+				list.refresh();
+			}
 		}
 	}
 

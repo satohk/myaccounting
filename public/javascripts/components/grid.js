@@ -15,13 +15,17 @@ kakeibo.component.Grid = function(params){
 		num_row: 15,
 		container: "",
 		list: null,
-		on_change_selection: function(){}
+		row_type: "withbtn",			// "normal", "withbtn"
+		row_btn_label: "commit",
+		unclicked_btn_cls: "btn-info",
+		on_change_selection: function(){},
+		on_row_button_clicked: function(){}
 	};
 	for(key in params){
 		this.m_params[key] = params[key];
 	}
 
-	this.m_params = params;
+	//this.m_params = params;
 	this.m_selected_row_no = -1;
 	this.m_visible_row_ct = 0;
 
@@ -44,10 +48,15 @@ kakeibo.component.Grid.prototype.initView = function(){
 		'</thead>' +
 		'<tbody id="grid-tbody">';
 
+	var date_col =
+		'<button class="btn btn-small ' + this.m_params.unclicked_btn_cls + '">' +
+		this.m_params.row_btn_label + '</button>' +
+		'<span>date</span>'
+	
 	var row =
 		'  <tr class="grid-row" style="display:none">' +
 		'    <td width="30"> <input type="checkbox" /><img src="/img/loading.gif" alt=""></td>' +
-		'    <td width="100"> </td>' +
+		'    <td width="100"> ' + date_col + ' </td>' +
 		'    <td width="100"> </td>' +
 		'    <td width="100"> </td>' +
 		'    <td width="80"> </td>' +
@@ -70,12 +79,13 @@ kakeibo.component.Grid.prototype.initView = function(){
 	$("#" + this.m_params.container).html(content);
 
 	var self = this;
-	var on_click = function(e){
-		if(e.target.nodeName.toUpperCase() == "INPUT"){
+	var on_click_row = function(e){
+		var cls = e.target.nodeName.toUpperCase()
+		if(cls == "INPUT" || cls == "BUTTON"){
 			return;
 		}
 		var $target = $(e.target);
-		var row_no = parseInt($target.closest("tr").attr("row_no"));
+		var row_no = parseInt($target.closest("tr").attr("data-row-no"));
 
 		var entry = self.m_params.list.getEntryInCurrentPage(row_no);
 		if(!entry.isUploading()){
@@ -89,9 +99,19 @@ kakeibo.component.Grid.prototype.initView = function(){
 	var $rows = $tbody.children();
 	for(i = 0; i < $rows.length; i++){
 		$row = $($rows[i]);
-		$row.attr("row_no", i);
-		$row.click(on_click);
+		$row.attr("data-row-no", i);
+		$row.click(on_click_row);
 	}
+
+	var on_click_button = function(e){
+		var $btn = $(e.target);
+		var $tr = $btn.closest("tr");
+		$btn.removeClass(self.m_params.unclicked_btn_cls);
+		row_no = parseInt($tr.attr("data-row-no"));
+		self.m_params.on_row_button_clicked(row_no);
+	};
+
+	$("button", $tbody).click(on_click_button);
 }
 
 
@@ -149,6 +169,7 @@ kakeibo.component.Grid.prototype.setEntryToGridRow = function(row_ct, $row, entr
 	if(entry != null){
 		var creditor = "";
 		var debtor = "";
+		var date = "";
 
 		if(entry.getCreditorSub() != null){
 			creditor += entry.getCreditorSub().getName() + "<br>";
@@ -177,7 +198,15 @@ kakeibo.component.Grid.prototype.setEntryToGridRow = function(row_ct, $row, entr
 			$($td[0]).children("img").hide();
 			$($td[0]).children("input").show();
 		}
-		$td[1].innerHTML = entry.getTransactionDateStr();
+
+		if(this.m_params.row_type == "withbtn"){
+			$($td[1]).children("span").hide();
+			$($td[1]).children("button").show().addClass(this.m_params.unclicked_btn_cls);
+		}
+		else{
+			$($td[1]).children("span").show().html(entry.getTransactionDateStr());
+			$($td[1]).children("button").hide();
+		}
 		$td[2].innerHTML = debtor;
 		$td[3].innerHTML = creditor;
 		var amount_color;
@@ -272,4 +301,10 @@ kakeibo.component.Grid.prototype.changeNumRow = function(num_row){
 	this.m_params.num_row = num_row;
 
 	this.initView();
+}
+
+
+kakeibo.component.Grid.prototype.changeRowType = function(row_type){
+	this.m_params.row_type = row_type;
+	this.update();
 }

@@ -81,6 +81,7 @@ kakeibo.component.chart.PieChart.prototype.setDate = function(year, month){
 
 kakeibo.component.chart.PieChart.prototype.update = function(){
 	var data = [];
+	var no_data = true;
 
 	for(var i = 0; i < this.m_categories.length; i++){
 		var sum_cell = this.m_summary_table.getCell(this.m_year, this.m_month, this.m_categories[i].getId());
@@ -95,9 +96,17 @@ kakeibo.component.chart.PieChart.prototype.update = function(){
 		}
 		if(amount > 0){
 			data.push([this.m_categories[i].getName(), amount]);
+			no_data = false;
 		}
 	}
 	//console.log(data);
+	if(no_data){
+		this.m_chart.setTitle({text: "no data"});
+	}
+	else{
+		this.m_chart.setTitle({text: this.m_title});
+	}
+
 	this.m_chart.series[0].setData(data);
 	this.m_chart.redraw();
 }

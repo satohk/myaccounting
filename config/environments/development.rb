@@ -51,5 +51,5 @@ MyAccounting::Application.configure do
   config.action_mailer.default_url_options = { :host => ENV['RAILS_HOSTNAME'] || "localhost:3000" }
 
   # logger level
-  config.log_level = :info
+  config.log_level = :debug
 end

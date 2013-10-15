@@ -24,7 +24,7 @@ kakeibo.controller.ListTabController = function(){
 	this.m_search_button_num = 0;
 
 	this.initDetailPanel();
-	this.initDetailPanelTooltip();
+	this.initDetailPanelHelpDialog();
 	this.initGrid();
 	this.initKakeiboEntryLists();
 
@@ -70,13 +70,24 @@ kakeibo.controller.ListTabController.prototype.initKakeiboEntryLists = function(
 	this.m_selector2list = {};
 	this.m_current_list_selector = null;
 
-	var param = new kakeibo.model.KakeiboEntrySearchParam([]);
-	var list = new kakeibo.model.KakeiboEntryList(param, kakeibo.model.Setting.getInt("num-grid-row"), on_current_page_modified);
-	this.bindKakeiboEntryList2button("list-pane-all-entries-button", list);
-	this.m_all_entry_lists.push(list);
+	{ // all list
+		var param = new kakeibo.model.KakeiboEntrySearchParam({});
+		var list = new kakeibo.model.KakeiboEntryList(param, kakeibo.model.Setting.getInt("num-grid-row"), on_current_page_modified, false);
+		this.bindKakeiboEntryList2button("list-pane-all-entries-button", list);
+		this.m_all_entry_lists.push(list);
+	}
 
-	this.m_recent_entry_list = new kakeibo.model.KakeiboRecentEntryList(kakeibo.model.Setting.getInt("num-grid-row"), on_current_page_modified);
-	this.bindKakeiboEntryList2button("list-pane-recent-entries-button", this.m_recent_entry_list);
+	{ // recent list
+		this.m_recent_entry_list = new kakeibo.model.KakeiboRecentEntryList(kakeibo.model.Setting.getInt("num-grid-row"), on_current_page_modified);
+		this.bindKakeiboEntryList2button("list-pane-recent-entries-button", this.m_recent_entry_list);
+	}
+
+	{ // template list
+		var param = new kakeibo.model.KakeiboEntrySearchParam({is_template: 1});
+		var list = new kakeibo.model.KakeiboEntryList(param, kakeibo.model.Setting.getInt("num-grid-row"), on_current_page_modified, true);
+		this.bindKakeiboEntryList2button("list-pane-template-entries-button", list);
+		this.m_all_entry_lists.push(list);
+	}
 
 	kakeibo.model.KakeiboEntrySet.setUpdateEntryListener(on_update_entry);
 
@@ -103,25 +114,41 @@ kakeibo.controller.ListTabController.prototype.bindKakeiboEntryList2button = fun
 			self.updateView();
 
 			$("#list-pane-title").html($("#" + e.target.id).html());
+
+			var $date = $("#list-pane-input-date");
+			if(list.isTemplateList()){
+				$date.attr("disabled", "disabled");
+				self.m_grid.changeRowType("withbtn");
+			}
+			else{
+				$date.removeAttr("disabled");
+				self.m_grid.changeRowType("normal");
+			}
 		}
 	});
 }
 
 
-kakeibo.controller.ListTabController.prototype.initDetailPanelTooltip = function(){
+kakeibo.controller.ListTabController.prototype.initDetailPanelHelpDialog = function(){
 	var option = {
 		trigger: "click",
 		html: "true",
-		placement: "bottom"
+		placement: "bottom",
+		content: $("#list-pane-detail-panel-help").html()
 	};
-
-	option.title = $("#list-pane-date-info-title").html();
-	$("#list-pane-date-info").tooltip(option);
-
-	option.title = $("#list-pane-category-info-title").html();
-	$("#list-pane-debtor-info").tooltip(option);
-	$("#list-pane-creditor-info").tooltip(option);
+	$("#list-pane-detail-panel-help-button").popover(option);
 }
+
+
+kakeibo.controller.ListTabController.prototype.getDetailPanelTransactionDate = function(){
+	if(this.m_grid.getList().isTemplateList()){
+		return "1000/01/01";
+	}
+	else{
+		return $("#list-pane-input-date").val();
+	}
+}
+
 
 
 kakeibo.controller.ListTabController.prototype.initDetailPanel = function(){
@@ -282,21 +309,12 @@ kakeibo.controller.ListTabController.prototype.initDetailPanel = function(){
 				amount: $("#list-pane-input-amount").val(),
 				creditor_leaf_shortcut: $("#list-pane-input-creditor").val(),
 				debtor_leaf_shortcut: $("#list-pane-input-debtor").val(),
-				transaction_date: $("#list-pane-input-date").val(),
+				transaction_date: self.getDetailPanelTransactionDate(),
+				is_template: self.m_grid.getList().isTemplateList() ? 1 : 0,
 				memo: $("#list-pane-input-memo").val()
 			};
 
-			var entry = kakeibo.model.KakeiboEntrySet.addEntry(-1, data, true);
-			if(entry == null){
-				jError($("#list-pane-msg-input-error").attr("data-msg"), {clickOverlay: true});
-				return;
-			}
-
-			self.m_recent_entry_list.addEntry(entry);
-
-			$("#list-pane-recent-entries-button").click();
-			self.m_recent_entry_list.moveToFirstPage();
-			self.updateView();
+			self.addKakeiboEntry(data, true);
 		});
 	}
 
@@ -309,21 +327,12 @@ kakeibo.controller.ListTabController.prototype.initDetailPanel = function(){
 				amount: $("#list-pane-input-amount").val(),
 				creditor_leaf_shortcut: $("#list-pane-input-creditor").val(),
 				debtor_leaf_shortcut: $("#list-pane-input-debtor").val(),
-				transaction_date: $("#list-pane-input-date").val(),
+				transaction_date: self.getDetailPanelTransactionDate(),
 				memo: $("#list-pane-input-memo").val()
 			};
-
 			var entry = self.m_grid.getSelectedEntry()
-			if(entry == null){
-				jError("data select error", {clickOverlay: true});
-				return;
-			}
 
-			if(kakeibo.model.KakeiboEntrySet.updateEntry(entry.getId(), entry.getId(), data, true) == null){
-				jError($("#list-pane-msg-input-error").attr("data-msg"), {clickOverlay: true});
-				return;
-			}
-			self.m_grid.unselectRow();
+			self.modifyKakeiboEntry(entry, data);
 		});
 	}
 
@@ -338,6 +347,7 @@ kakeibo.controller.ListTabController.prototype.initDetailPanel = function(){
 				creditor: $("#list-pane-search-creditor").val(),
 				amount_low: $("#list-pane-search-amount-low").val(),
 				amount_high: $("#list-pane-search-amount-high").val(),
+				is_template: 0,
 				memo: $("#list-pane-search-memo").val()
 			};
 			var btn_id = self.addSearchButton(param);
@@ -357,6 +367,41 @@ kakeibo.controller.ListTabController.prototype.initDetailPanel = function(){
 }
 
 
+kakeibo.controller.ListTabController.prototype.addKakeiboEntry = function(attr, update_view){
+	var entry = kakeibo.model.KakeiboEntrySet.addEntry(-1, attr, true);
+	if(entry == null){
+		jError($("#list-pane-msg-input-error").attr("data-msg"), {clickOverlay: true});
+		return;
+	}
+
+	if(entry.isTemplate() == 0){
+		this.m_recent_entry_list.addEntry(entry);
+	}
+
+	if(update_view){
+		if(entry.isTemplate() == 0){
+			$("#list-pane-recent-entries-button").click();
+			this.m_recent_entry_list.moveToFirstPage();
+		}
+		this.updateView();
+	}
+}
+
+
+kakeibo.controller.ListTabController.prototype.modifyKakeiboEntry = function(entry, attr){
+	var entry = this.m_grid.getSelectedEntry()
+	if(entry == null){
+		jError("data select error", {clickOverlay: true});
+		return;
+	}
+
+	if(kakeibo.model.KakeiboEntrySet.updateEntry(entry.getId(), entry.getId(), attr, true) == null){
+		jError($("#list-pane-msg-input-error").attr("data-msg"), {clickOverlay: true});
+		return;
+	}
+	this.m_grid.unselectRow();
+}
+
 kakeibo.controller.ListTabController.prototype.addSearchButton = function(search_param, title){
 	var self = this;
 
@@ -374,12 +419,19 @@ kakeibo.controller.ListTabController.prototype.addSearchButton = function(search
 		$btn.html(title);
 	}
 	$btn_container.show();
-	$("#list-pane-entries-button-container").append($btn_container);
+
+	$btn_list = $("#list-pane-search-result-button-container");
+	$btn_list.append($btn_container);
+
+	if(this.m_search_button_num == 1){
+		$btn_list.parent().show();
+	}
 
 	var search_list = new kakeibo.model.KakeiboEntryList(
 		new kakeibo.model.KakeiboEntrySearchParam(search_param),
 		kakeibo.model.Setting.getInt("num-grid-row"),
-		function(list){self.onCurrentPageModified(list);}
+		function(list){self.onCurrentPageModified(list);},
+		false
 	);
 	this.bindKakeiboEntryList2button(btn_id, search_list);
 	this.m_all_entry_lists.push(search_list);	
@@ -443,6 +495,14 @@ kakeibo.controller.ListTabController.prototype.initGrid = function(){
 		}
 	};
 
+	var on_row_button_clicked = function(row_no){
+		var entry = self.m_grid.getList().getEntryInCurrentPage(row_no);
+		var attr = entry.getAttrHash();
+		attr.is_template = 0;
+		attr.transaction_date = kakeibo.model.KakeiboEntryAttrConverter.date2str(new Date());
+		self.addKakeiboEntry(attr, false);
+	};
+
 	this.m_grid = new kakeibo.component.Grid({
 		caption_date: $("#list-pane-input-date-caption").html(),
 		caption_debtor: $("#list-pane-input-debtor-caption").html(),
@@ -451,7 +511,9 @@ kakeibo.controller.ListTabController.prototype.initGrid = function(){
 		caption_memo: $("#list-pane-input-memo-caption").html(),
 		num_row: kakeibo.model.Setting.getInt("num-grid-row"),
 		container: "list-pane-grid-wrapper",
-		on_change_selection: on_change_selection
+		row_btn_label: $("#list-pane-row-button-label").html(),
+		on_change_selection: on_change_selection,
+		on_row_button_clicked: on_row_button_clicked
 	});
 }
 
@@ -460,8 +522,11 @@ kakeibo.controller.ListTabController.prototype.setEntryToDetailPanel = function(
 	$("#list-pane-input-amount").val(entry.getAmountStr()).blur();
 	$("#list-pane-input-creditor").val(entry.getCreditorLeafStr()).blur();
 	$("#list-pane-input-debtor").val(entry.getDebtorLeafStr()).blur();
-	$("#list-pane-input-date").val(entry.getTransactionDateStr()).blur();
 	$("#list-pane-input-memo").val(entry.getMemoStr()).blur();
+
+	if(!entry.isTemplate()){
+		$("#list-pane-input-date").val(entry.getTransactionDateStr()).blur();
+	}
 }
 
 

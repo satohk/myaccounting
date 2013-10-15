@@ -66,7 +66,7 @@ MyAccounting::Application.routes.draw do
   match 'kakeibo/update' => 'kakeibo#update'
   match 'kakeibo/remove' => 'kakeibo#remove'
   match 'kakeibo/get_summaries' => 'kakeibo#get_summaries'
-  match 'kakeibo/import' => 'kakeibo#import'
+  match 'kakeibo/import' => 'kakeibo#import', :via => :post
   match 'kakeibo/update_budget' => 'kakeibo#update_budget'
   match 'kakeibo/update_category' => 'kakeibo#update_category'
   match 'kakeibo/sleep' => 'kakeibo#test_sleep'

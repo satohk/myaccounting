@@ -1,5 +1,6 @@
 class KakeiboEntry < ActiveRecord::Base
-  attr_accessible :user_id, :amount, :creditor_id, :creditor_sub_id, :debtor_id, :debtor_sub_id, :transaction_date, :memo
+  attr_accessible :user_id, :amount, :creditor_id, :creditor_sub_id, :debtor_id, :debtor_sub_id
+  attr_accessible :transaction_date, :memo, :is_template
   
   
   def KakeiboEntry.update_with_summary(args)
@@ -10,7 +11,9 @@ class KakeiboEntry < ActiveRecord::Base
       end
       entry = entries.first
       
-      Summary.update_summaries(entry, -entry.amount)
+      if args[:is_template] == 0
+        Summary.update_summaries(entry, -entry.amount)
+      end
 
       res = entry.update_attributes(
                              :amount => args[:amount],
@@ -22,7 +25,9 @@ class KakeiboEntry < ActiveRecord::Base
                              :memo => args[:memo]
                              )
       
-      Summary.update_summaries(entry, entry.amount)
+      if args[:is_template] == 0
+        Summary.update_summaries(entry, entry.amount)
+      end
       
       return entry
     end
@@ -30,28 +35,33 @@ class KakeiboEntry < ActiveRecord::Base
     logger.debug e
     return nil
   end
-  
+
 
   def KakeiboEntry.create_with_summary(args)
     ActiveRecord::Base.transaction do
       entry = KakeiboEntry.create!(
-                          :user_id => args[:user_id],
-                          :amount => args[:amount],
-                          :creditor_id => args[:creditor_id],
-                          :creditor_sub_id => args[:creditor_sub_id],
-                          :debtor_id => args[:debtor_id],
-                          :debtor_sub_id => args[:debtor_sub_id],
-                          :transaction_date => args[:transaction_date],
-                          :memo => args[:memo]
-                          )
+                                   :user_id => args[:user_id],
+                                   :amount => args[:amount],
+                                   :creditor_id => args[:creditor_id],
+                                   :creditor_sub_id => args[:creditor_sub_id],
+                                   :debtor_id => args[:debtor_id],
+                                   :debtor_sub_id => args[:debtor_sub_id],
+                                   :transaction_date => args[:transaction_date],
+                                   :is_template => args[:is_template],
+                                   :memo => args[:memo]
+                                   )
 
-      Summary.update_summaries(entry, entry.amount)
+      if args[:is_template] == 0
+        Summary.update_summaries(entry, entry.amount)
+      end
+
       return entry
     end
   rescue => e
     logger.debug e
     return nil
   end
+
   
   def KakeiboEntry.delete_with_summary(id_list, user_id)
     ActiveRecord::Base.transaction do
@@ -61,7 +71,10 @@ class KakeiboEntry < ActiveRecord::Base
           raise ActiveRecord::Rollback
         end
         entry = entries.first
-        Summary.update_summaries(entry, -entry.amount)
+
+        if entry.is_template == 0
+          Summary.update_summaries(entry, -entry.amount)
+        end
         entry.destroy
       end
     end
@@ -83,6 +96,7 @@ class KakeiboEntry < ActiveRecord::Base
     end
 
     file.tempfile.each do |line|
+      logger.info line
       line_utf8 = line.encode("UTF-8", "Shift_JIS")
       debtor, debtor_sub, creditor, creditor_sub, amount_str, memo, date_str = line_utf8.split(',')
       amount = amount_str.to_i
@@ -95,15 +109,16 @@ class KakeiboEntry < ActiveRecord::Base
       creditor_sub_id = name2id[creditor_sub + creditor_id.to_s]
 
       entry = KakeiboEntry.create_with_summary(
-                          :user_id => user_id,
-                          :amount => amount,
-                          :creditor_id => creditor_id,
-                          :creditor_sub_id => creditor_sub_id,
-                          :debtor_id => debtor_id,
-                          :debtor_sub_id => debtor_sub_id,
-                          :transaction_date => date,
-                          :memo => memo
-                          )
+                                               :user_id => user_id,
+                                               :amount => amount,
+                                               :creditor_id => creditor_id,
+                                               :creditor_sub_id => creditor_sub_id,
+                                               :debtor_id => debtor_id,
+                                               :debtor_sub_id => debtor_sub_id,
+                                               :transaction_date => date,
+                                               :is_template => 0,
+                                               :memo => memo
+                                               )
       if entry == nil
         return false
       end
@@ -132,6 +147,7 @@ class KakeiboEntry < ActiveRecord::Base
         :debtor_id => val.debtor_id,
         :debtor_sub_id => val.debtor_sub_id,
         :transaction_date => val.transaction_date.strftime("%Y/%m/%d"),
+        :is_template => val.is_template,
         :memo => val.memo
       }
     end

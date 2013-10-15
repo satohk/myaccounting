@@ -83,7 +83,7 @@ kakeibo.component.chart.LineChart.prototype.update = function(){
 				data[j] = 0;
 			}
 			else{
-				if(this.column_type == "balance"){
+				if(this.m_column_type == "balance"){
 					data[j] = cell.getBalance();
 				}
 				else{
