@@ -347,7 +347,6 @@ kakeibo.controller.ListTabController.prototype.initDetailPanel = function(){
 				creditor: $("#list-pane-search-creditor").val(),
 				amount_low: $("#list-pane-search-amount-low").val(),
 				amount_high: $("#list-pane-search-amount-high").val(),
-				is_template: 0,
 				memo: $("#list-pane-search-memo").val()
 			};
 			var btn_id = self.addSearchButton(param);
