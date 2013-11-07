@@ -76,4 +76,8 @@ MyAccounting::Application.configure do
   }
 
   config.action_mailer.default_url_options = { :host => ENV['RAILS_HOSTNAME'] }
+
+
+  # logger level
+  config.log_level = :debug
 end

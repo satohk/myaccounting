@@ -1,9 +1,12 @@
 <br>
 <div class="container">
   <div class="row">
-	<div class="offset2 span8">
+	<div class="span7">
+	  <%= render "devise/shared/desc" %>
+	</div>
+	<div class="span5">
 	  <div class="well">	
-		<h2>アカウント作成</h2>
+		<h4>アカウント作成</h4>
 		<hr>
 		<%= form_for(resource, :as => resource_name, :url => registration_path(resource_name)) do |f| %>
 		
@@ -30,4 +33,5 @@
 
 	</div>
   </div>
+  <%= render "devise/shared/footer" %>
 </div>

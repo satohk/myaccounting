@@ -111,7 +111,7 @@ class Summary < ActiveRecord::Base
     all_entries = KakeiboEntry.find(:all,
                                     :select=>'user_id, amount, creditor_id, creditor_sub_id, debtor_id, debtor_sub_id, transaction_date',
                                     :order=>"transaction_date asc",
-                                    :conditions=>"user_id=#{user_id}")
+                                    :conditions=>"user_id=#{user_id} and is_template=0")
     all_entries.each do |entry|
       Summary.update_summaries(entry, entry.amount)
     end

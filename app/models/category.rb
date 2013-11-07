@@ -171,9 +171,10 @@ class Category < ActiveRecord::Base
                                 "debtor_id=#{from_id} and debtor_sub_id=#{from_sub_id} and " +
                                 "user_id=#{user_id}")
       end
-
-      Summary.rebuild(user_id)
     end
+
+    # トランザクションの中に入れるとMySQLのエラーになったので外に出す (作業用メモリに入りきらなかった？)
+    Summary.rebuild(user_id)
 
     return true
 

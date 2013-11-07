@@ -1,12 +1,12 @@
 <br>
 <div class="container">
   <div class="row">
-	<div class="offset2 span8">
-
+	<div class="span7">
 	  <%= render "devise/shared/desc" %>
-
+	</div>
+	<div class="span5">
 	  <div class="well">	
-		<h2>ログイン</h2>
+		<h4>ログイン</h4>
 		<hr>
 		<%= form_for(resource, :as => resource_name, :url => session_path(resource_name)) do |f| %>
 		
@@ -30,8 +30,7 @@
 
 	  </div>
 
-	  <%= render "devise/shared/footer" %>
 	</div>
   </div>
-
+  <%= render "devise/shared/footer" %>
 </div>
