@@ -210,11 +210,14 @@ kakeibo.component.Grid.prototype.setEntryToGridRow = function(row_ct, $row, entr
 		$td[2].innerHTML = debtor;
 		$td[3].innerHTML = creditor;
 		var amount_color;
-		if(entry.getCreditor().isCreditor()){
+		if(entry.getCreditor().getCategoryType() == kakeibo.model.CategoryType.INCOME){
 			amount_color = "text-success";
 		}
-		else{
+		else if(entry.getDebtor().getCategoryType() == kakeibo.model.CategoryType.COST){
 			amount_color = "text-error";
+		}
+		else{
+			amount_color = "";
 		}
 		$td[4].innerHTML = "<div class='pull-right " + amount_color + "'><strong>" + entry.getAmountStr() + "&nbsp;&nbsp;&nbsp;</strong></div>";
 		$($td[5]).text(entry.getMemoStr());
